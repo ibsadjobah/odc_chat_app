@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:odc_chat_app/screens/message.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -116,7 +118,15 @@ class _HomePageState extends State<HomePage>
             ListView(
               shrinkWrap: true,
               children: List.generate(messages.length, (index) {
-                return createMessage(message: messages[index]);
+                return GestureDetector(
+                  child: createMessage(message: messages[index]),
+                  onTap: () {
+                    Get.to(() => MessagePage(
+                          message: messages[index],
+                        ));
+                    //Get.off(() => MessagePage());
+                  },
+                );
               }),
             )
           ],
