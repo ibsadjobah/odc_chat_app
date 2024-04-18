@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:odc_chat_app/models/user.dart';
 import 'package:odc_chat_app/screens/message.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,12 +17,12 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  List users = [
-    {"nom": "BAH", "image": "assets/users/a.png", "status": true},
-    {"nom": "JAMES", "image": "assets/users/avatar.jpg", "status": true},
-    {"nom": "BAH", "image": "assets/users/a.png", "status": false},
-    {"nom": "BAH", "image": "assets/users/aa.jpg", "status": true},
-  ];
+  List<User> users = [];
+
+  int pageCouraant = 1;
+
+  PagingController<int, User> pagingController =
+      PagingController(firstPageKey: 1);
 
   List messages = [];
 
@@ -32,27 +34,43 @@ class _HomePageState extends State<HomePage>
     super.initState();
     _controller = AnimationController(vsync: this);
 
-    messages = [
-      {
-        'user': users[0],
-        'message': 'Message de la ',
-        "heure": '16H:89',
-        "status": 3
-      },
-      {
-        'user': users[1],
-        'message': 'Message de la ',
-        "heure": '16H:89',
-        "status": 3
-      },
-      {
-        'user': users[2],
-        'message': 'Message de la ',
-        "heure": '16H:89',
-        "status": 3
-      },
-    ];
+    pagingController.addPageRequestListener((pageKey) {
+      getUsersList(page: pageKey);
+    });
+
+    // messages = [
+    //   {
+    //     'user': users[0],
+    //     'message': 'Message de la ',
+    //     "heure": '16H:89',
+    //     "status": 3
+    //   },
+    //   {
+    //     'user': users[1],
+    //     'message': 'Message de la ',
+    //     "heure": '16H:89',
+    //     "status": 3
+    //   },
+    //   {
+    //     'user': users[2],
+    //     'message': 'Message de la ',
+    //     "heure": '16H:89',
+    //     "status": 3
+    //   },
+    // ];
   }
+
+  void getUsersList({int page = 1}) {
+    getUsers(page: page, pagingController: pagingController);
+  }
+
+  // void getUserList() {
+  //   getUsers().then((value) {
+  //     setState(() {
+  //       users = value;
+  //     });
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -63,6 +81,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       backgroundColor: HexColor("#131205"),
       appBar: AppBar(
         title: Text("Disussion"),
@@ -95,12 +114,23 @@ class _HomePageState extends State<HomePage>
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Container(
+            //   height: 180,
+            //   child: ListView(
+            //     scrollDirection: Axis.horizontal,
+            //     children: List.generate(users.length, (index) {
+            //       return createAvatar(user: users[index]);
+            //     }),
+            //   ),
+            // ),
             Container(
               height: 180,
-              child: ListView(
+              child: PagedListView(
+                pagingController: pagingController,
                 scrollDirection: Axis.horizontal,
-                children: List.generate(users.length, (index) {
-                  return createAvatar(user: users[index]);
+                builderDelegate: PagedChildBuilderDelegate<User>(
+                    itemBuilder: (context, item, index) {
+                  return createAvatar(user: item);
                 }),
               ),
             ),
@@ -186,7 +216,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget createAvatar({required Map user}) {
+  Widget createAvatar({required User user}) {
     return Padding(
       padding: EdgeInsets.all(10),
       child: Column(
@@ -197,9 +227,9 @@ class _HomePageState extends State<HomePage>
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundImage: AssetImage(user['image']),
+                  backgroundImage: NetworkImage(user.image),
                 ),
-                user['status']
+                true
                     ? Positioned(
                         bottom: 1,
                         right: 1,
@@ -213,7 +243,7 @@ class _HomePageState extends State<HomePage>
                         ),
                       )
                     : const SizedBox(),
-                user['status']
+                true
                     ? Positioned(
                         bottom: 0,
                         right: 0,
@@ -231,7 +261,7 @@ class _HomePageState extends State<HomePage>
             ),
           ),
           Text(
-            user['nom'],
+            user.first_name,
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,

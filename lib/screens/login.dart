@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:get/get.dart';
 import 'package:getwidget/components/button/gf_button.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:odc_chat_app/models/user.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -16,10 +20,32 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
 
   final _formKey = GlobalKey<FormBuilderState>();
 
+  //TextEditingController
+
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this);
+  }
+
+  void login({required Map data}) async {
+    ProgressDialog dialog  = ProgressDialog(context: context);
+
+    dialog.show(max: 50, msg: "patienter...");
+
+    var dioClient = new dio.Dio();
+
+    try {
+      dio.Response response =
+          await dioClient.post("https://reqres.in/api/login", data: data);
+
+      dialog.close();
+    } catch (e) {
+      Get.snackbar("Erreur", "Email ou mot de passe incorrect",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          icon: Icon(Icons.error));
+    }
   }
 
   @override
@@ -70,7 +96,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                             labelStyle:
                                 TextStyle(fontSize: 20, color: Colors.white),
                             label: Text("Email"),
-                            hintText: "placeholder",
+                            hintText: "email",
                             icon: Icon(Icons.email, color: Colors.white)),
                       ),
                     ),
@@ -109,7 +135,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                           text: "LOGIN",
                           onPressed: () {
                             if (_formKey.currentState!.saveAndValidate()) {
-                              print(_formKey.currentState!.value);
+                              //print(_formKey.currentState!.value);
+                              login(data: _formKey.currentState!.value);
                             } else {
                               print("Your login or password is incorrect");
                             }

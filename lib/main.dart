@@ -19,10 +19,8 @@ class MyFirstApp extends StatelessWidget {
       title: "ODC APP",
       home: Login(),
       localizationsDelegates: [
-       
         FormBuilderLocalizations.delegate,
-    ],
-      //home: HomePage(),
+      ],
     );
   }
 }
